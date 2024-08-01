@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consulta de Proximidad</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Tu archivo CSS personalizado -->
+    <link href="styles.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">Consulta de Proximidad</h1>
+        <div class="row">
+            <div class="col-md-6 offset-md-3">
+                <input type="text" class="form-control mb-3" id="searchInput" placeholder="Escribe una palabra...">
+                <button class="btn btn-primary w-100" id="searchButton">Buscar</button>
+                <ul id="results" class="list-group mt-3"></ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS y dependencias opcionales -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+    <!-- Tu archivo JS personalizado -->
+    <script>
+        // Incluye el diccionario directamente
+        const dictionary = [
+            "amor", "arbol", "casa", "día", "espejo", "familia", "gato", "hombre", "luna", "mujer", 
+            "nube", "olla", "puerta", "ratón", "sol", "tierra", "viento", "agua", "lago", "mar",
+            "padre", "madre", "hermano", "hermana", "amigo", "amiga", "ciudad", "pueblo", "camino", "sendero",
+            "lago", "montaña", "valle", "río", "bosque", "planta", "árbol", "flor", "hoja", "ramo",
+            "luz", "sombra", "noche", "día", "sol", "luna", "estrella", "planeta", "universo", "galaxia",
+            "fruta", "manzana", "banana", "naranja", "uva", "fresa", "kiwi", "melón", "sandía", "pera",
+            "pelota", "coche", "bici", "avión", "barco", "tren", "autobús", "camión", "motocicleta", "scooter",
+            "piedra", "arena", "tierra", "agua", "aire", "fuego", "lago", "mar", "océano", "río",
+            "cuadro", "pintura", "escultura", "foto", "imagen", "música", "canción", "melodía", "nota", "acorde",
+            "leche", "pan", "queso", "mantequilla", "huevo", "carne", "pollo", "pescado", "verdura", "legumbre",
+            "olla", "sartén", "cuchara", "tenedor", "cuchillo", "plato", "taza", "vaso", "copa", "tenedor",
+            "espejo", "ventana", "puerta", "pared", "techo", "suelo", "mueble", "sofá", "silla", "mesa",
+            "refrigerador", "horno", "microondas", "lavadora", "secadora", "televisor", "radio", "ordenador", "teléfono", "tablet",
+            "cine", "teatro", "museo", "biblioteca", "parque", "plaza", "playa", "montaña", "campo", "jardín",
+            "escuela", "universidad", "hospital", "clínica", "farmacia", "tienda", "supermercado", "mercado", "restaurante", "café",
+            "nación", "país", "estado", "provincia", "ciudad", "pueblo", "barrio", "calle", "avenida", "plaza",
+            "trabajo", "empleo", "profesión", "ocupación", "oficina", "empresa", "negocio", "jefe", "empleado", "compañero"
+        ];
+
+        // Función para calcular la distancia de Levenshtein entre dos cadenas
+        function levenshtein(a, b) {
+            const alen = a.length;
+            const blen = b.length;
+            const dp = Array.from({ length: blen + 1 }, (_, i) => Array(alen + 1).fill(0));
+            
+            for (let i = 0; i <= alen; i++) dp[0][i] = i;
+            for (let i = 1; i <= blen; i++) dp[i][0] = i;
+
+            for (let i = 1; i <= blen; i++) {
+                for (let j = 1; j <= alen; j++) {
+                    const cost = a[j - 1] === b[i - 1] ? 0 : 1;
+                    dp[i][j] = Math.min(
+                        dp[i - 1][j] + 1, // Eliminación
+                        dp[i][j - 1] + 1, // Inserción
+                        dp[i - 1][j - 1] + cost // Reemplazo
+                    );
+                }
+            }
+
+            return dp[blen][alen];
+        }
+
+        // Función para buscar palabras cercanas en el diccionario
+        function searchNearbyWords(query, maxDistance) {
+            return dictionary.filter(word => levenshtein(query, word) <= maxDistance);
+        }
+
+        // Event listener para el botón de búsqueda
+        document.getElementById('searchButton').addEventListener('click', () => {
+            const query = document.getElementById('searchInput').value;
+            const maxDistance = 2; // Puedes ajustar la distancia máxima según sea necesario
+            const results = searchNearbyWords(query, maxDistance);
+
+            const resultsContainer = document.getElementById('results');
+            resultsContainer.innerHTML = '';
+            results.forEach(result => {
+                const listItem = document.createElement('li');
+                listItem.textContent = result;
+                listItem.classList.add('list-group-item');
+                resultsContainer.appendChild(listItem);
+            });
+        });
+    </script>
+</body>
+</html>
